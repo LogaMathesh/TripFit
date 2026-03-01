@@ -11,7 +11,7 @@ import Suggestions from './components/Suggestions';
 import Home from './components/Home';
 import About from './components/About';
 import Chatbot from './components/Chatbot';
-
+import AsyncImageUpload from './components/AsyncImageUpload';
 function App() {
   const [view, setView] = useState('home');
   const [user, setUser] = useState(null);

@@ -11,6 +11,7 @@ from transformers import pipeline
 from chatbot_routes import chatbot_bp
 from per_user_index import add_image_for_user
 from flask import send_from_directory
+from async_module.routes import async_bp
 
 UPLOAD_FOLDER = 'uploaded_images'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -23,6 +24,7 @@ CORS(app)
 
 # Register chatbot blueprint
 app.register_blueprint(chatbot_bp)
+app.register_blueprint(async_bp)
 
 # PostgreSQL connection
 conn = psycopg2.connect(
