@@ -5,7 +5,7 @@ Script to clean up duplicate indexes in the chatbot system
 import os
 import json
 import faiss
-from per_user_index import _user_paths, _create_new_index
+from ml_services.per_user_index import _user_paths, _create_new_index
 
 def clean_user_index(user_id):
     """Clean duplicate entries from user's index"""

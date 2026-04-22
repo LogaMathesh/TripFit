@@ -2,7 +2,7 @@ import os
 import json
 import faiss
 import numpy as np
-from clip_embed_utils import embed_image, embed_text
+from ml_services.clip_embed_utils import embed_image, embed_text
 
 # -----------------------------
 # CONFIG

@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import Login from './components/Login';
-import Signup from './components/Signup';
-import History from './components/History';
-import Favorites from './components/Favorites';
-import Upload from './components/Upload';
-import Suggestions from './components/Suggestions';
-import Home from './components/Home';
-import About from './components/About';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import History from './pages/History';
+import Favorites from './pages/Favorites';
+import Upload from './pages/Upload';
+import Suggestions from './pages/Suggestions';
+import Home from './pages/Home';
+import About from './pages/About';
+import IdeaSearch from './pages/IdeaSearch';
 import Chatbot from './components/Chatbot';
 import AsyncImageUpload from './components/AsyncImageUpload';
 function App() {
@@ -68,6 +69,7 @@ function App() {
             {view === 'favorites' && <Favorites username={user} />}
             {view === 'suggestions' && <Suggestions username={user} />}
             {view === 'chatbot' && <Chatbot currentUser={{ id: user }} />}
+            {view === 'idea_search' && <IdeaSearch />}
           </>
         )}
       </main>

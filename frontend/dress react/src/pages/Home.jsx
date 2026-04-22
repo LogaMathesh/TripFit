@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import './Home.css';
 import { Helmet } from 'react-helmet-async';
-import Chatbot from './Chatbot';
+import Chatbot from '../components/Chatbot';
 
 export default function Home({ setView, user }) {
   const [showChatbot, setShowChatbot] = useState(false);

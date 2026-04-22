@@ -5,7 +5,7 @@ celery_instance = Celery(
     'async_tasks',
     broker='redis://localhost:6379/0',
     backend='redis://localhost:6379/0',
-    include=['async_module.tasks']  # <--- THIS IS THE FIX
+    include=['async_tasks.tasks']  # <--- THIS IS THE FIX
 )
 
 celery_instance.conf.update(

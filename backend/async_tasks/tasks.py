@@ -4,7 +4,7 @@ import psycopg2
 from PIL import Image
 from transformers import pipeline
 from .celery_setup import celery_instance
-from per_user_index import add_image_for_user
+from ml_services.per_user_index import add_image_for_user
 
 # 1. Initialize the ML model natively inside the Celery Worker
 print("Loading CLIP Model into Celery Worker...")

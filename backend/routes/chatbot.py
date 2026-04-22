@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from per_user_index import add_image_for_user, query_user
+from ml_services.per_user_index import add_image_for_user, query_user
 import os
 import uuid
 from werkzeug.utils import secure_filename
