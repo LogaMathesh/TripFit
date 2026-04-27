@@ -11,6 +11,7 @@ import Suggestions from './pages/Suggestions';
 import Home from './pages/Home';
 import About from './pages/About';
 import IdeaSearch from './pages/IdeaSearch';
+import Profile from './pages/Profile';
 import Chatbot from './components/Chatbot';
 import AsyncImageUpload from './components/AsyncImageUpload';
 function App() {
@@ -64,12 +65,13 @@ function App() {
         {/* Authenticated routes */}
         {user && (
           <>
+            {view === 'profile' && <Profile username={user} />}
             {view === 'dashboard' && <Upload username={user} />}
             {view === 'history' && <History username={user} />}
             {view === 'favorites' && <Favorites username={user} />}
             {view === 'suggestions' && <Suggestions username={user} />}
             {view === 'chatbot' && <Chatbot currentUser={{ id: user }} />}
-            {view === 'idea_search' && <IdeaSearch />}
+            {view === 'idea_search' && <IdeaSearch user={user} />}
           </>
         )}
       </main>

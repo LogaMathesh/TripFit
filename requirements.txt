@@ -3,3 +3,14 @@ flask-cors
 psycopg2
 Pillow
 transformers
+google-generativeai
+google-search-results
+faiss-cpu
+numpy
+torch
+torchvision
+celery
+redis
+requests
+python-dotenv
+gevent

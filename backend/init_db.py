@@ -1,7 +1,8 @@
 import os
 import psycopg2
 
-def get_connection():
+def init_db():
+    print("Connecting to the database...")
     conn = psycopg2.connect(
         dbname=os.environ.get("DB_NAME", "loga"),
         user=os.environ.get("DB_USER", "postgres"),
@@ -9,17 +10,31 @@ def get_connection():
         host=os.environ.get("DB_HOST", "localhost"),
         port=os.environ.get("DB_PORT", "5432"),
     )
-    return conn
+    cur = conn.cursor()
 
-# Export a single global connection and cursor to preserve existing app behavior
-conn = get_connection()
-cur = conn.cursor()
+    print("Creating tables...")
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(255) UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        )
+    ''')
 
-# Database migration / schema updates
-try:
-    cur.execute("ALTER TABLE uploads ADD COLUMN IF NOT EXISTS favorite BOOLEAN DEFAULT FALSE")
-    
-    # Phase 1: Profiles and Logs
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS uploads (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(255) NOT NULL REFERENCES users(username) ON DELETE CASCADE,
+            image_path TEXT NOT NULL,
+            position VARCHAR(255),
+            style VARCHAR(255),
+            color VARCHAR(255),
+            md5_hash VARCHAR(255),
+            uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            favorite BOOLEAN DEFAULT FALSE
+        )
+    ''')
+
     cur.execute('''
         CREATE TABLE IF NOT EXISTS user_profiles (
             id SERIAL PRIMARY KEY,
@@ -31,6 +46,7 @@ try:
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+
     cur.execute('''
         CREATE TABLE IF NOT EXISTS search_logs (
             id SERIAL PRIMARY KEY,
@@ -40,7 +56,11 @@ try:
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+
     conn.commit()
-except Exception as e:
-    print(f"Error executing schema migrations: {e}")
-    conn.rollback()
+    cur.close()
+    conn.close()
+    print("Database initialization complete! Tables 'users' and 'uploads' have been created.")
+
+if __name__ == "__main__":
+    init_db()

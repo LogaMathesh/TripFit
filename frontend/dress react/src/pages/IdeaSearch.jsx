@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './IdeaSearch.css';
 
-export default function IdeaSearch() {
+export default function IdeaSearch({ user }) {
   const [idea, setIdea] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
@@ -21,7 +21,7 @@ export default function IdeaSearch() {
       const response = await fetch('http://localhost:5000/search-ideas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idea })
+        body: JSON.stringify({ idea, username: user })
       });
 
       const data = await response.json();
@@ -33,7 +33,7 @@ export default function IdeaSearch() {
         if (data.error === 'gemini_api_key_missing') {
           setError("⚠️ Please ask the server administrator to input the GEMINI_API_KEY inside the .env file.");
         } else {
-          setError(data.message || data.error || 'Something went wrong.');
+          setError(data.message || data.details || data.error || 'Something went wrong.');
         }
       }
     } catch (err) {

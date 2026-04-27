@@ -16,6 +16,7 @@ export default function Header({ user, setView, handleLogout }) {
           </>
         ) : (
           <>
+            <button className="btn btn-gradient" onClick={() => setView('profile')}>👤 Profile</button>
             <button className="btn btn-gradient" onClick={() => setView('dashboard')}>📤 Upload</button>
             <button className="btn btn-gradient" onClick={() => setView('history')}>📋 History</button>
             <button className="btn btn-gradient" onClick={() => setView('favorites')}>❤️ Favorites</button>
