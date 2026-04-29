@@ -1,0 +1,12 @@
+Flask
+flask-cors
+psycopg2-binary
+Pillow
+google-generativeai
+google-genai
+google-search-results
+celery
+redis
+requests
+python-dotenv
+gevent

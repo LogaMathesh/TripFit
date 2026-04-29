@@ -1,7 +1,11 @@
 from flask import Blueprint, request, jsonify
-from ml_services.per_user_index import add_image_for_user, query_user
+from services.gemini_service import analyze_dress_image, suggest_matching_items
+from database import conn, cur
 import os
 import uuid
+import json
+import datetime
+import hashlib
 from werkzeug.utils import secure_filename
 
 # Create blueprint for chatbot routes
@@ -30,29 +34,38 @@ def chatbot_upload():
         if not allowed_file(file.filename):
             return jsonify({'error': 'Invalid file type'}), 400
         
-        # Get user_id from request
+        # Get user_id from request (functions as username)
         user_id = request.form.get('user_id')
         if not user_id:
             return jsonify({'error': 'User ID required'}), 400
         
-        # Get optional metadata
-        style = request.form.get('style', 'Unknown')
-        color = request.form.get('color', 'Unknown')
-        
         # Generate unique filename
         filename = secure_filename(file.filename)
         unique_filename = f"{uuid.uuid4().hex}_{filename}"
-         # STORE ALL IMAGES IN uploaded_images/ (FLAT)
         file_path = os.path.join(UPLOAD_DIR, unique_filename)
 
+        image_bytes = file.read()
+        image_hash = hashlib.md5(image_bytes).hexdigest()
+
         # Save file
-        file.save(file_path)
+        with open(file_path, 'wb') as f:
+            f.write(image_bytes)
+
+        # Process with Gemini
+        metadata = analyze_dress_image(file_path)
         
-        # Add to user's index
-        nid = add_image_for_user(user_id, file_path, style, color)
+        position = metadata.get("category", "upper")
+        style = metadata.get("style", "casual")
+        color = metadata.get("primary_color", "black")
         
-        if nid is None:
-            return jsonify({'error': 'Failed to process image'}), 500
+        # Insert to database
+        gemini_metadata_json = json.dumps(metadata)
+        cur.execute(
+            "INSERT INTO uploads (username, image_path, position, style, color, md5_hash, uploaded_at, gemini_metadata) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+            (user_id, file_path, position, style, color, image_hash, datetime.datetime.now(), gemini_metadata_json)
+        )
+        nid = cur.fetchone()[0]
+        conn.commit()
         
         return jsonify({
             'message': 'Image uploaded and indexed successfully',
@@ -61,6 +74,7 @@ def chatbot_upload():
         }), 200
         
     except Exception as e:
+        conn.rollback()
         print("UPLOAD ERROR >>>", repr(e))
         return jsonify({'error': f'Upload failed: {str(e)}'}), 500
 
@@ -82,30 +96,45 @@ def chatbot_query():
         if not query_text:
             return jsonify({'error': 'Query text required'}), 400
         
-        # Query user's index - limit to top 3 results
-        results = query_user(user_id, query_text, top_k=3)
+        # Fetch user's wardrobe from DB
+        cur.execute("SELECT image_path, style, color, position, gemini_metadata FROM uploads WHERE username = %s", (user_id,))
+        rows = cur.fetchall()
         
-        # Format results for frontend with additional deduplication
+        wardrobe_items = []
+        for r in rows:
+            filename = os.path.basename(r[0])
+            url = f'http://localhost:5000/image/{filename}'
+            meta = r[4] if r[4] else {}
+            wardrobe_items.append({
+                'url': url,
+                'style': r[1],
+                'color': r[2],
+                'position': r[3],
+                'metadata': meta
+            })
+
+        # If no items, return empty
+        if not wardrobe_items:
+            return jsonify({
+                'results': [],
+                'query': query_text,
+                'count': 0
+            }), 200
+
+        # Ask Gemini to rank items
+        matched_urls = suggest_matching_items(query_text, wardrobe_items)
+        
         formatted_results = []
-        seen_urls = set()
-        
-        for result in results:
-            filename = os.path.basename(result['path'])
-            image_url = f'http://localhost:5000/image/{filename}'
-            
-            # Skip if we've already seen this URL
-            if image_url not in seen_urls:
-                seen_urls.add(image_url)
+        for url in matched_urls:
+            # find style, color for this url
+            item = next((x for x in wardrobe_items if x['url'] == url), None)
+            if item:
                 formatted_results.append({
-                    'url': image_url,
-                    'style': result.get('style', 'Unknown'),
-                    'color': result.get('color', 'Unknown'),
-                    'score': result.get('score', 0.0)
+                    'url': url,
+                    'style': item['style'],
+                    'color': item['color'],
+                    'score': 1.0 # Placeholder since Gemini doesn't return exact distances
                 })
-                
-                # Stop at 3 results
-                if len(formatted_results) >= 3:
-                    break
         
         return jsonify({
             'results': formatted_results,

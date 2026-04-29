@@ -20,6 +20,7 @@ def create_app():
     from routes.chatbot import chatbot_bp
     from routes.idea_search import idea_search_bp
     from routes.profile import profile_bp
+    from routes.interactions import interactions_bp
     from async_tasks.routes import async_bp
 
     app.register_blueprint(auth_bp)
@@ -28,6 +29,7 @@ def create_app():
     app.register_blueprint(chatbot_bp)
     app.register_blueprint(idea_search_bp)
     app.register_blueprint(profile_bp)
+    app.register_blueprint(interactions_bp)
     app.register_blueprint(async_bp)
 
     return app

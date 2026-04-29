@@ -25,6 +25,7 @@ def search_ideas():
         # 1. Fetch user profile context if username is provided
         profile_context = ""
         if username:
+            # Fetch static profile
             cur.execute("SELECT gender, budget_level, sizes, style_preferences FROM user_profiles WHERE username = %s", (username,))
             row = cur.fetchone()
             if row:
@@ -36,16 +37,35 @@ def search_ideas():
                 if style: profile_parts.append(f"Style Preferences: {style}")
                 
                 if profile_parts:
-                    profile_context = "\nUser Profile Constraints:\n" + "\n".join(profile_parts) + "\nIncorporate these profile preferences into the search query if they make sense, but prioritize the user's explicit description."
+                    profile_context += "\nUser Profile Constraints:\n" + "\n".join(profile_parts) + "\nIncorporate these profile preferences into the search query if they make sense, but prioritize the user's explicit description."
+
+            # Fetch dynamic interactions (Phase 2 feedback loop)
+            cur.execute("""
+                SELECT title, interaction_type 
+                FROM user_interactions 
+                WHERE username = %s 
+                ORDER BY created_at DESC LIMIT 15
+            """, (username,))
+            interactions = cur.fetchall()
+            
+            liked_items = [row[0] for row in interactions if row[1] == 'like']
+            disliked_items = [row[0] for row in interactions if row[1] == 'dislike']
+            
+            if liked_items or disliked_items:
+                profile_context += "\n\nDynamic Style Feedback based on user history:"
+                if liked_items:
+                    profile_context += "\nThe user recently LIKED these items: " + " | ".join(liked_items[:5]) + ". Lean towards similar styles."
+                if disliked_items:
+                    profile_context += "\nThe user explicitly DISLIKED these items: " + " | ".join(disliked_items[:5]) + ". Use negative keywords (e.g., -keyword) to avoid these styles entirely."
 
         # 2. Prompt Gemini AI to generate a strong shopping query
         genai.configure(api_key=Config.GEMINI_API_KEY)
         model = genai.GenerativeModel('gemini-2.5-flash')
         prompt = f"""You are an expert personal shopper and SEO specialist. 
 The user wants to find a specific outfit based on their description. 
-Convert the following description of an outfit into exactly one highly optimized search query for Google Shopping. 
-The query should focus on visual traits, style, color, pattern, and category. 
-It should be concise, using keywords that yield the best product matches on an e-commerce search engine. 
+Convert the following description into exactly one highly optimized search query for Google Shopping. 
+IMPORTANT: The query must be CONCRETE. Instead of abstract concepts like "party outfit" or "streetwear outfit", use specific clothing items (e.g., "red streetwear hoodie", "red men's party blazer", "emerald green formal dress"). Google Shopping fails on abstract concepts.
+The query should focus on visual traits, style, color, pattern, and the specific clothing category. 
 Reply ONLY with the exact search query string. Do NOT include quotes, explanations, preambles, or any conversational text.
 {profile_context}
 
@@ -74,6 +94,8 @@ Search Query:"""
         params = {
             "engine": "google_shopping",
             "q": query,
+            "gl": "us",
+            "hl": "en",
             "api_key": Config.SERPAPI_KEY
         }
         
@@ -81,6 +103,31 @@ Search Query:"""
         results_dict = search.get_dict()
         
         shopping_results = results_dict.get("shopping_results", [])
+        
+        # Fallback to Google Images if Shopping returns nothing for conceptual queries
+        if not shopping_results:
+            fallback_params = {
+                "engine": "google",
+                "q": query + " outfit",
+                "tbm": "isch",
+                "gl": "us",
+                "hl": "en",
+                "api_key": Config.SERPAPI_KEY
+            }
+            fallback_search = GoogleSearch(fallback_params)
+            fallback_dict = fallback_search.get_dict()
+            images_results = fallback_dict.get("images_results", [])
+            
+            # Map image results to the shopping format
+            shopping_results = []
+            for img in images_results:
+                shopping_results.append({
+                    "title": img.get("title", "Outfit Idea"),
+                    "price": "View Image",
+                    "link": img.get("link", ""),
+                    "thumbnail": img.get("thumbnail", ""),
+                    "source": img.get("source", "")
+                })
         
         # 5. Clean up the payload before sending it to Frontend
         clean_results = []

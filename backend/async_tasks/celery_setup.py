@@ -1,10 +1,11 @@
+import os
 from celery import Celery
 
 # Initialize Celery and tell it EXACTLY where to find the tasks
 celery_instance = Celery(
     'async_tasks',
-    broker='redis://localhost:6379/0',
-    backend='redis://localhost:6379/0',
+    broker=os.environ.get('REDIS_URL', 'redis://localhost:6379/0'),
+    backend=os.environ.get('REDIS_URL', 'redis://localhost:6379/0'),
     include=['async_tasks.tasks']  # <--- THIS IS THE FIX
 )
 

@@ -8,6 +8,8 @@ export default function IdeaSearch({ user }) {
   const [queryUsed, setQueryUsed] = useState('');
   const [error, setError] = useState(null);
 
+  const [interactions, setInteractions] = useState({});
+
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!idea.trim()) return;
@@ -40,6 +42,34 @@ export default function IdeaSearch({ user }) {
       setError('Connection error: Make sure the backend server is running.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleInteraction = async (e, item, type, index) => {
+    e.preventDefault(); // Prevent navigating to the link
+    if (!user) {
+        alert("Please log in to save preferences!");
+        return;
+    }
+    
+    // Optimistic UI update
+    setInteractions(prev => ({
+        ...prev,
+        [index]: type
+    }));
+
+    try {
+        await fetch('http://localhost:5000/interact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: user,
+                item: item,
+                type: type
+            })
+        });
+    } catch (err) {
+        console.error("Failed to save interaction", err);
     }
   };
 
@@ -81,6 +111,29 @@ export default function IdeaSearch({ user }) {
                 <h4 className="card-title">{item.title}</h4>
                 <p className="card-price">{item.price}</p>
                 <p className="card-source">{item.source}</p>
+              </div>
+              <div className="card-interactions">
+                <button 
+                  className={`interaction-btn ${interactions[idx] === 'like' ? 'active-like' : ''}`}
+                  onClick={(e) => handleInteraction(e, item, 'like', idx)}
+                  title="I like this style"
+                >
+                  👍
+                </button>
+                <button 
+                  className={`interaction-btn ${interactions[idx] === 'dislike' ? 'active-dislike' : ''}`}
+                  onClick={(e) => handleInteraction(e, item, 'dislike', idx)}
+                  title="Show me less like this"
+                >
+                  👎
+                </button>
+                <button 
+                  className={`interaction-btn ${interactions[idx] === 'save' ? 'active-save' : ''}`}
+                  onClick={(e) => handleInteraction(e, item, 'save', idx)}
+                  title="Save for later"
+                >
+                  💾
+                </button>
               </div>
             </a>
           ))}

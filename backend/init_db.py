@@ -31,7 +31,8 @@ def init_db():
             color VARCHAR(255),
             md5_hash VARCHAR(255),
             uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            favorite BOOLEAN DEFAULT FALSE
+            favorite BOOLEAN DEFAULT FALSE,
+            gemini_metadata JSONB
         )
     ''')
 
@@ -53,6 +54,20 @@ def init_db():
             username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE,
             raw_prompt TEXT NOT NULL,
             generated_query TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS user_interactions (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE,
+            title TEXT,
+            price VARCHAR(100),
+            link TEXT,
+            thumbnail TEXT,
+            source VARCHAR(255),
+            interaction_type VARCHAR(50),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')

@@ -18,6 +18,7 @@ cur = conn.cursor()
 # Database migration / schema updates
 try:
     cur.execute("ALTER TABLE uploads ADD COLUMN IF NOT EXISTS favorite BOOLEAN DEFAULT FALSE")
+    cur.execute("ALTER TABLE uploads ADD COLUMN IF NOT EXISTS gemini_metadata JSONB")
     
     # Phase 1: Profiles and Logs
     cur.execute('''
@@ -37,6 +38,21 @@ try:
             username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE,
             raw_prompt TEXT NOT NULL,
             generated_query TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # Phase 2: User Interactions
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS user_interactions (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE,
+            title TEXT,
+            price VARCHAR(100),
+            link TEXT,
+            thumbnail TEXT,
+            source VARCHAR(255),
+            interaction_type VARCHAR(50),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')

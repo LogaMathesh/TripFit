@@ -1,0 +1,107 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: dress_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-loga}
+      POSTGRES_DB: ${DB_NAME:-loga}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-loga}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: dress_redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dress_backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      # Exclude the venv and __pycache__ from being overwritten by the host
+      - /app/.venv
+      - /app/__pycache__
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-loga}
+      - DB_NAME=${DB_NAME:-loga}
+      - REDIS_URL=redis://redis:6379/0
+      - SERPAPI_KEY=${SERPAPI_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dress_celery
+    restart: unless-stopped
+    command: celery -A async_tasks.celery_setup.celery_instance worker --loglevel=info -P gevent
+    volumes:
+      - ./backend:/app
+      - /app/.venv
+      - /app/__pycache__
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-loga}
+      - DB_NAME=${DB_NAME:-loga}
+      - REDIS_URL=redis://redis:6379/0
+      - SERPAPI_KEY=${SERPAPI_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend/dress react
+      dockerfile: Dockerfile
+    container_name: dress_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - "./frontend/dress react:/app"
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:5000
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

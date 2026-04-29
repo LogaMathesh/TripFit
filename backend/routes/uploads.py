@@ -6,8 +6,8 @@ from flask import Blueprint, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 from database import cur, conn
 from config import Config
-from ml_services.classifier import classify_all_attributes_efficient
-from ml_services.per_user_index import add_image_for_user
+from services.gemini_service import analyze_dress_image
+import json
 
 uploads_bp = Blueprint('uploads_bp', __name__)
 
@@ -49,27 +49,29 @@ def classify():
         f.write(image_bytes)
 
     try:
-        img = Image.open(file_path)
+        # Validate image
+        with Image.open(file_path) as img:
+            img.verify()
     except Exception:
         if os.path.exists(file_path):
             os.remove(file_path)
         return jsonify({'error': 'Invalid image file'}), 400
 
-    classification = classify_all_attributes_efficient(img)
-    position = classification["position"]
-    style = classification["style"]
-    color = classification["color"]
+    # Call Gemini API
+    metadata = analyze_dress_image(file_path)
+    
+    # Map back to legacy fields
+    position = metadata.get("category", "upper")
+    style = metadata.get("style", "casual")
+    color = metadata.get("primary_color", "black")
+    
+    gemini_metadata_json = json.dumps(metadata)
 
     cur.execute(
-        "INSERT INTO uploads (username, image_path, position, style, color, md5_hash, uploaded_at) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-        (username, file_path, position, style, color, image_hash, datetime.datetime.now())
+        "INSERT INTO uploads (username, image_path, position, style, color, md5_hash, uploaded_at, gemini_metadata) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+        (username, file_path, position, style, color, image_hash, datetime.datetime.now(), gemini_metadata_json)
     )
     conn.commit()
-
-    try:
-        add_image_for_user(username, file_path, style, color)
-    except Exception as e:
-        print(f"Warning: Failed to index image: {e}")
 
     image_url = f"http://localhost:5000/image/{filename}"
     return jsonify({'position': position, 'style': style, 'color': color, 'image_url': image_url})

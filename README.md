@@ -35,23 +35,73 @@ This project allows users to:
 - AI chatbot for user queries
 - Admin panel with CSV export
 - PostgreSQL database support
+- Celery background tasks (Redis)
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** React
+- **Frontend:** React, Vite
 - **Backend:** Flask
 - **AI Model:** CLIP (openai/clip-vit-large-patch14)
-- **Chatbot:** LLM-based
+- **Chatbot:** LLM-based (Gemini)
 - **Database:** PostgreSQL
+- **Background Tasks:** Celery, Redis
 
 ---
 
-## 🏃‍♂️ How to Run the Project
+## 🐳 Docker Setup (Recommended)
+
+The easiest way to run the application is using Docker. This will set up the frontend, backend, PostgreSQL database, Redis, and Celery worker automatically.
 
 ### Prerequisites
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
+### Setup Steps
+
+1. **Clone the repository and navigate to the project root:**
+   ```bash
+   git clone <your-repo-url>
+   cd My-Dress-App
+   ```
+
+2. **Configure Environment Variables:**
+   Copy `.env.example` to `.env` in the root directory:
+   ```bash
+   cp .env.example .env
+   ```
+   *Note: Open `.env` and fill in your actual `GEMINI_API_KEY`, `SERPAPI_KEY`, and `GOOGLE_API_KEY`.*
+
+3. **Build and Run the Containers:**
+   ```bash
+   docker compose up --build
+   ```
+
+4. **Initialize the Database:**
+   Once the containers are running, initialize the database schema by executing the init script inside the backend container (only needed once):
+   ```bash
+   docker compose exec backend python init_db.py
+   ```
+
+### Ports Used
+- **Frontend:** http://localhost:5173
+- **Backend API:** http://localhost:5000
+- **PostgreSQL:** 5432
+- **Redis:** 6379
+
+### Troubleshooting (Docker)
+- If the backend fails to connect to the database, ensure you didn't change the `DB_HOST=db` in the `.env` file for Docker.
+- If changes to the frontend/backend don't reflect, you may need to rebuild the images: `docker compose up --build`.
+
+---
+
+## 🏃‍♂️ Manual Setup (Without Docker)
+
+<details>
+<summary>Click here to view manual setup instructions</summary>
+
+### Prerequisites
 - Node.js (for frontend)
 - Python 3.8+ (for backend)
 - PostgreSQL
@@ -73,40 +123,15 @@ This project allows users to:
    ```
 3. **Install the dependencies:**
    ```bash
-   pip install -r ../requirements.txt
+   pip install -r requirements.txt
    ```
 4. **Set up the Database and Redis:**
-   - Ensure PostgreSQL is running and update the `.env` file with your database credentials (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`).
+   - Ensure PostgreSQL is running and update the `.env` file with your database credentials (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST=localhost`, `DB_PORT`).
    - **Initialize the PostgreSQL tables:**
-     You can easily create the required tables by running the provided initialization script from the `backend` directory:
      ```bash
      python init_db.py
      ```
-     *Alternatively, you can manually run the following SQL commands in your PostgreSQL database:*
-     <details>
-     <summary>Click to view SQL Schema</summary>
-     
-     ```sql
-     CREATE TABLE IF NOT EXISTS users (
-         id SERIAL PRIMARY KEY,
-         username VARCHAR(255) UNIQUE NOT NULL,
-         password TEXT NOT NULL
-     );
-
-     CREATE TABLE IF NOT EXISTS uploads (
-         id SERIAL PRIMARY KEY,
-         username VARCHAR(255) NOT NULL REFERENCES users(username) ON DELETE CASCADE,
-         image_path TEXT NOT NULL,
-         position VARCHAR(255),
-         style VARCHAR(255),
-         color VARCHAR(255),
-         md5_hash VARCHAR(255),
-         uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-         favorite BOOLEAN DEFAULT FALSE
-     );
-     ```
-     </details>
-   - Ensure Redis is running locally on port 6379 (or update `.env` as required).
+   - Ensure Redis is running locally on port 6379 (or update `REDIS_URL` in `.env`).
    - Set up your API keys in the `.env` file (e.g., Gemini API, SerpAPI).
 
 5. **Run the Flask application:**
@@ -137,4 +162,4 @@ This project allows users to:
    npm run dev
    ```
 
-Now, the application should be running! The frontend will typically be on `http://localhost:5173` and the backend API on `http://localhost:5000`.
+</details>
