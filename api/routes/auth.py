@@ -10,19 +10,24 @@ def signup():
     username = data['username']
     password = data['password']
 
-    conn = get_connection()
-    cur = conn.cursor()
+    conn = None
+    cur = None
     try:
+        conn = get_connection()
+        cur = conn.cursor()
         password_hash = generate_password_hash(password)
         cur.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s)", (username, password_hash))
         conn.commit()
         return jsonify({"message": "Signup successful", "user": username}), 200
-    except Exception:
-        conn.rollback()
-        return jsonify({"error": "Username already exists or DB error"}), 400
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return jsonify({"error": "Signup failed", "details": str(e)}), 500
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 @auth_bp.route('/login', methods=['POST'])
@@ -31,9 +36,11 @@ def login():
     username = data.get('username')
     password = data.get('password')
 
-    conn = get_connection()
-    cur = conn.cursor()
+    conn = None
+    cur = None
     try:
+        conn = get_connection()
+        cur = conn.cursor()
         cur.execute("SELECT password_hash FROM users WHERE username = %s", (username,))
         result = cur.fetchone()
 
@@ -42,8 +49,11 @@ def login():
         else:
             return jsonify({"error": "Invalid credentials"}), 401
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         return jsonify({"error": "Database error", "details": str(e)}), 500
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
