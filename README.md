@@ -1,6 +1,6 @@
-# My Dress App
+# FitFinder
 
-Production-ready dress recommendation app.
+Production-ready AI wardrobe and outfit recommendation app.
 
 ## Stack
 

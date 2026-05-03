@@ -5,9 +5,7 @@ import Footer from './components/Footer';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import History from './pages/History';
-import Favorites from './pages/Favorites';
 import Upload from './pages/Upload';
-import Suggestions from './pages/Suggestions';
 import Home from './pages/Home';
 import About from './pages/About';
 import IdeaSearch from './pages/IdeaSearch';
@@ -25,7 +23,7 @@ function App() {
     if (storedUser) {
       setUser(storedUser);
       // Use last visited page or default to 'home' instead of 'dashboard'
-      setView(lastView || 'home');
+      setView(['favorites', 'suggestions'].includes(lastView) ? 'history' : lastView || 'home');
     }
   }, []);
 
@@ -52,7 +50,7 @@ function App() {
 
   return (
     <div className="app">
-      <Header user={user} setView={handleViewChange} handleLogout={handleLogout} />
+      <Header user={user} view={view} setView={handleViewChange} handleLogout={handleLogout} />
       
       <main>
         {/* Unauthenticated routes */}
@@ -67,8 +65,6 @@ function App() {
             {view === 'profile' && <Profile username={user} />}
             {view === 'dashboard' && <Upload username={user} />}
             {view === 'history' && <History username={user} />}
-            {view === 'favorites' && <Favorites username={user} />}
-            {view === 'suggestions' && <Suggestions username={user} />}
             {view === 'chatbot' && <Chatbot currentUser={{ id: user }} />}
             {view === 'idea_search' && <IdeaSearch user={user} />}
           </>

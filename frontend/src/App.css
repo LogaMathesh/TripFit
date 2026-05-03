@@ -1,20 +1,20 @@
 /* Modern Design System */
 :root {
-  --primary-color: #667eea;
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --secondary-color: #f093fb;
-  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --accent-color: #4facfe;
-  --accent-gradient: linear-gradient(135deg, #010101 0%, #00f2fe 100%);
-  --success-color: #43e97b;
-  --warning-color: #fa709a;
-  --error-color: #ff6b6b;
-  --text-primary: #2d3748;
-  --text-secondary: #718096;
+  --primary-color: #4f46e5;
+  --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --secondary-color: #be3455;
+  --secondary-gradient: linear-gradient(135deg, #be3455 0%, #e05a7a 100%);
+  --accent-color: #0f766e;
+  --accent-gradient: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+  --success-color: #15803d;
+  --warning-color: #b45309;
+  --error-color: #be123c;
+  --text-primary: #111827;
+  --text-secondary: #475569;
   --text-light: #a0aec0;
   --bg-primary: #ffffff;
-  --bg-secondary: #f7fafc;
-  --bg-tertiary: #edf2f7;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #eef2ff;
   --border-color: #e2e8f0;
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -32,28 +32,51 @@
   box-sizing: border-box;
 }
 
+html {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background:
+    radial-gradient(circle at top left, rgba(79, 70, 229, 0.18), transparent 34rem),
+    linear-gradient(135deg, #f8fafc 0%, #eef2ff 48%, #fdf2f8 100%);
   min-height: 100vh;
   color: var(--text-primary);
   line-height: 1.6;
   font-weight: 400;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+img {
+  max-width: 100%;
 }
 
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background:
+    radial-gradient(circle at top left, rgba(79, 70, 229, 0.18), transparent 34rem),
+    linear-gradient(135deg, #f8fafc 0%, #eef2ff 48%, #fdf2f8 100%);
 }
 
 main {
   flex: 1;
-  padding: 2rem;
+  padding: 1.5rem 2rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  min-width: 0;
 }
 
 /* Modern Button Styles */
@@ -331,5 +354,16 @@ main {
   }
   .creator-section {
     padding: 1rem 0 0 0;
+  }
+}
+
+@media (max-width: 480px) {
+  main {
+    padding: 0.75rem;
+  }
+
+  .card,
+  .form-container {
+    border-radius: 10px;
   }
 }

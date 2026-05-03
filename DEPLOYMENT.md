@@ -19,13 +19,13 @@ Paste backend variables into Render under Web Service > Environment:
 - `CLOUDINARY_API_SECRET`: Cloudinary Dashboard > API secret.
 - `GEMINI_API_KEY`: Google AI Studio API key.
 - `SERPAPI_KEY`: SerpAPI key, only if `/search-ideas` is enabled.
-- `FRONTEND_URL`: Your Vercel URL, for example `https://my-dress-app.vercel.app`.
-- `CORS_ORIGINS`: Same Vercel URL plus local dev if needed: `https://my-dress-app.vercel.app,http://localhost:5173`.
+- `FRONTEND_URL`: Your Vercel URL, for example `https://fitfinder.vercel.app`.
+- `CORS_ORIGINS`: Same Vercel URL plus local dev if needed: `https://fitfinder.vercel.app,http://localhost:5173`.
 - `SECRET_KEY`: Any long random string.
 
 Paste frontend variables into Vercel under Project Settings > Environment Variables:
 
-- `VITE_API_URL`: Your Render backend URL, for example `https://my-dress-api.onrender.com`.
+- `VITE_API_URL`: Your Render backend URL, for example `https://fitfinder-api.onrender.com`.
 - `VITE_CLOUDINARY_CLOUD_NAME`: Cloudinary Dashboard > Cloud name.
 - `VITE_CLOUDINARY_UPLOAD_PRESET`: Cloudinary unsigned upload preset name.
 

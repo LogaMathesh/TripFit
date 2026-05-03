@@ -26,7 +26,7 @@ def init_db():
             id SERIAL PRIMARY KEY,
             username VARCHAR(255) NOT NULL REFERENCES users(username) ON DELETE CASCADE,
             image_path TEXT NOT NULL,
-            position VARCHAR(255),
+            position VARCHAR(255),  
             style VARCHAR(255),
             color VARCHAR(255),
             md5_hash VARCHAR(255),

@@ -1,15 +1,42 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import "./Chatbot.css";
 import { apiUrl } from "../lib/api";
+import { Bot, Image, Send, Sparkles, Trash2, User } from "lucide-react";
 
 const Chatbot = ({ currentUser }) => {
-  const [messages, setMessages] = useState([]);
+  const historyKey = useMemo(
+    () => `fitfinder_chat_history_${currentUser?.id || "guest"}`,
+    [currentUser?.id]
+  );
+  const [messages, setMessages] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(historyKey)) || [];
+    } catch {
+      return [];
+    }
+  });
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const chatEndRef = useRef(null);
 
-  // Scroll to bottom on new message
+  useEffect(() => {
+    try {
+      setMessages(JSON.parse(localStorage.getItem(historyKey)) || []);
+    } catch {
+      setMessages([]);
+    }
+  }, [historyKey]);
+
+  useEffect(() => {
+    if (messages.length === 0) {
+      localStorage.removeItem(historyKey);
+      return;
+    }
+
+    localStorage.setItem(historyKey, JSON.stringify(messages));
+  }, [historyKey, messages]);
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -17,14 +44,15 @@ const Chatbot = ({ currentUser }) => {
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    setMessages([...messages, { type: "user", text: input }]);
+    const query = input.trim();
+    setMessages((prev) => [...prev, { type: "user", text: query }]);
     setLoading(true);
 
     try {
       const res = await fetch(apiUrl("/chatbot/query"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: currentUser.id, query: input }),
+        body: JSON.stringify({ user_id: currentUser.id, query }),
       });
 
       const data = await res.json();
@@ -45,7 +73,7 @@ const Chatbot = ({ currentUser }) => {
       }
 
       setMessages((prev) => [...prev, { type: "bot", text: botReply, images }]);
-    } catch (err) {
+    } catch {
       setMessages((prev) => [...prev, { type: "bot", text: "Error fetching results" }]);
     } finally {
       setInput("");
@@ -53,16 +81,41 @@ const Chatbot = ({ currentUser }) => {
     }
   };
 
+  const clearHistory = () => {
+    setMessages([]);
+    localStorage.removeItem(historyKey);
+  };
+
   return (
     <div className="chatbot-container">
+      <div className="chatbot-header">
+        <div className="assistant-mark">
+          <Bot size={22} />
+        </div>
+        <div>
+          <h2>Fashion Assistant</h2>
+          <p>Ask about outfits, occasions, colors, or saved wardrobe items.</p>
+        </div>
+        {messages.length > 0 && (
+          <button className="clear-chat-button" onClick={clearHistory} title="Clear chat history" aria-label="Clear chat history">
+            <Trash2 size={17} />
+          </button>
+        )}
+      </div>
+
       <div className="chat-messages">
         {messages.length === 0 ? (
           <div className="chat-placeholder">
-            Ask me anything about fashion! Try: "What should I wear for a job interview?"
+            <Sparkles size={28} />
+            <h3>How can I style your wardrobe today?</h3>
+            <p>Try asking: "What should I wear for a job interview?"</p>
           </div>
         ) : (
           messages.map((m, i) => (
             <div key={i} className={`chat-message ${m.type}`}>
+              <span className="message-avatar">
+                {m.type === "user" ? <User size={15} /> : <Bot size={15} />}
+              </span>
               <div className="chat-text">{m.text}</div>
               {m.images && m.images.length > 0 && (
                 <div className="image-grid">
@@ -73,12 +126,19 @@ const Chatbot = ({ currentUser }) => {
                         alt={`Recommendation ${img.index}`}
                         onClick={() => setSelectedImage(img)}
                       />
+                      <span><Image size={13} /> {img.style || "Saved look"}</span>
                     </div>
                   ))}
                 </div>
               )}
             </div>
           ))
+        )}
+        {loading && (
+          <div className="chat-message bot loading-message">
+            <span className="message-avatar"><Bot size={15} /></span>
+            <div className="typing-dots"><span></span><span></span><span></span></div>
+          </div>
         )}
         <div ref={chatEndRef} />
       </div>
@@ -88,20 +148,20 @@ const Chatbot = ({ currentUser }) => {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           placeholder="Ask for dress suggestions..."
         />
         <button onClick={sendMessage} disabled={loading || !input.trim()}>
-          {loading ? "..." : "Send"}
+          <Send size={17} />
+          <span>{loading ? "Sending" : "Send"}</span>
         </button>
       </div>
 
-      {/* Image Modal */}
       {selectedImage && (
         <div className="image-modal-overlay" onClick={() => setSelectedImage(null)}>
           <div className="image-modal" onClick={(e) => e.stopPropagation()}>
             <button className="image-modal-close" onClick={() => setSelectedImage(null)}>
-              ✕
+              x
             </button>
             <img src={selectedImage.url} alt={`Recommendation ${selectedImage.index}`} />
             <div className="image-modal-info">
