@@ -5,7 +5,6 @@ import {
   LogOut,
   Menu,
   MessageCircle,
-  Shirt,
   Sparkles,
   UploadCloud,
   User,
@@ -43,7 +42,9 @@ export default function Header({ user, view, setView, handleLogout }) {
   return (
     <header className="header">
       <button className="brand-button" onClick={() => goToView('home')} aria-label="Go to home">
-        <span className="brand-mark"><Shirt size={20} /></span>
+        <span className="brand-mark">
+          <img src="/fitfinder-logo.svg" alt="" aria-hidden="true" />
+        </span>
         <span className="brand-text">
           <span className="app-title">FitFinder</span>
           <span className="app-subtitle">AI wardrobe studio</span>

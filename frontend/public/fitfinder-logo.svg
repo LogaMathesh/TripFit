@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="title desc">
+  <title id="title">FitFinder logo</title>
+  <desc id="desc">A stylized dress outline with connected AI nodes.</desc>
+  <defs>
+    <linearGradient id="fitfinderGradient" x1="42" y1="54" x2="270" y2="252" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d7a64e"/>
+      <stop offset="0.52" stop-color="#d9b56f"/>
+      <stop offset="1" stop-color="#9f75c8"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="#fff"/>
+  <path
+    d="M133 50c-5 28-2 48 11 61 26 25 42 47 50 73 8 24 21 44 38 57-32 12-72 12-116 0-30-8-54-17-72-28 7-43 22-80 45-110 13-16 18-33 12-51-5-14-6-30-2-48h34z"
+    fill="none"
+    stroke="url(#fitfinderGradient)"
+    stroke-width="12"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+  <path
+    d="M164 50c5 28 2 48-11 61-25 25-41 47-49 73-8 24-21 44-38 57"
+    fill="none"
+    stroke="url(#fitfinderGradient)"
+    stroke-width="12"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+    opacity="0.95"
+  />
+  <path
+    d="M89 205c46-10 81-30 105-62"
+    fill="none"
+    stroke="url(#fitfinderGradient)"
+    stroke-width="10"
+    stroke-linecap="round"
+    opacity="0.9"
+  />
+  <path
+    d="M174 166l40-50 45 45M214 116l31 0M195 207l50-46"
+    fill="none"
+    stroke="url(#fitfinderGradient)"
+    stroke-width="10"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <circle cx="174" cy="166" r="15" fill="#fff" stroke="url(#fitfinderGradient)" stroke-width="10"/>
+  <circle cx="214" cy="116" r="15" fill="#fff" stroke="url(#fitfinderGradient)" stroke-width="10"/>
+  <circle cx="259" cy="161" r="15" fill="#fff" stroke="url(#fitfinderGradient)" stroke-width="10"/>
+  <circle cx="195" cy="207" r="15" fill="#fff" stroke="url(#fitfinderGradient)" stroke-width="10"/>
+</svg>

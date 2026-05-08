@@ -34,13 +34,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
-  border-radius: 12px;
-  color: white;
-  background: linear-gradient(135deg, #be3455 0%, #667eea 100%);
-  box-shadow: 0 12px 28px rgba(102, 126, 234, 0.28);
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(159, 117, 200, 0.18);
+  overflow: hidden;
+}
+
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .brand-text {
@@ -222,9 +229,9 @@
   }
 
   .brand-mark {
-    width: 38px;
-    height: 38px;
-    flex-basis: 38px;
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
     border-radius: 10px;
   }
 
