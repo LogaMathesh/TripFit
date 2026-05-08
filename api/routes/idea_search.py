@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 import json
 import re
 from collections import Counter, defaultdict
-from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
+from urllib.parse import parse_qsl, quote, urlencode, urlparse, urlunparse
 import google.generativeai as genai
 from config import Config
 from database import get_connection
@@ -166,6 +166,45 @@ def add_amazon_affiliate(link):
         ))
     except Exception:
         return link
+
+
+# Amazon Affiliate Integration
+def build_amazon_search_link(title):
+    try:
+        if not title:
+            return ""
+
+        encoded_title = quote(str(title).strip())
+        return f"https://www.amazon.in/s?k={encoded_title}&tag={AMAZON_AFFILIATE_TAG}"
+    except Exception:
+        return ""
+
+
+# Direct Merchant Link Resolver
+def resolve_direct_product_link(item):
+    try:
+        original_link = item.get("link") or item.get("product_link") or item.get("product_page_url") or ""
+        source = (item.get("source") or "").lower()
+        title = item.get("title") or ""
+
+        if "amazon" in source:
+            amazon_search_link = build_amazon_search_link(title)
+            return amazon_search_link
+
+        merchant_link = item.get("merchant_link") or item.get("seller_link") or ""
+        if is_amazon_link(merchant_link):
+            return add_amazon_affiliate(merchant_link)
+
+        product_link = item.get("product_link") or item.get("product_page_url") or ""
+        if is_amazon_link(product_link):
+            return add_amazon_affiliate(product_link)
+
+        if is_amazon_link(original_link):
+            return add_amazon_affiliate(original_link)
+
+        return original_link
+    except Exception:
+        return item.get("link") or item.get("product_link") or item.get("product_page_url") or ""
 
 
 # Recommendation Engine V2
@@ -474,8 +513,7 @@ def rerank_results(results, idea, preference_summary, occasion_priority=None):
             score *= occasion_priority.get("penalties", {}).get(cluster, 1.0)
 
             # Mild Amazon Ranking Boost
-            product_link = item.get("link") or item.get("product_link") or item.get("product_page_url")
-            if is_amazon_link(product_link):
+            if "amazon" in (item.get("source") or "").lower():
                 score += 0.12
 
             scored_results.append({
@@ -647,10 +685,14 @@ def search_ideas():
             shopping_results = rerank_results(build_debug_results(), idea, preference_summary, occasion_priority)
             clean_results = []
             amazon_count = 0
+            sample_amazon_link = ""
             for item in shopping_results[:16]:
-                link = add_amazon_affiliate(item.get("link", ""))
-                if link != item.get("link", ""):
+                link = resolve_direct_product_link(item)
+                source = item.get("source", "")
+                if "amazon" in source.lower() and link:
                     amazon_count += 1
+                    if not sample_amazon_link:
+                        sample_amazon_link = link
                 clean_results.append({
                     "title": item.get("title", 'Unknown Dress'),
                     "price": item.get("price", ''),
@@ -658,7 +700,8 @@ def search_ideas():
                     "thumbnail": item.get("thumbnail", ''),
                     "source": item.get("source", '')
                 })
-            print("Amazon affiliate applied:", amazon_count)
+            print("Amazon direct links generated:", amazon_count)
+            print("Sample amazon link:", sample_amazon_link)
 
             return jsonify({
                 'query_used': query,
@@ -690,11 +733,14 @@ def search_ideas():
         # 5. Clean up the payload before sending it to Frontend
         clean_results = []
         amazon_count = 0
+        sample_amazon_link = ""
         for item in shopping_results[:16]: # Return top 16 items
-            link = item.get("link") or item.get("product_link") or item.get("product_page_url")
-            affiliate_link = add_amazon_affiliate(link)
-            if affiliate_link != link:
+            affiliate_link = resolve_direct_product_link(item)
+            source = item.get("source", "")
+            if "amazon" in source.lower() and affiliate_link:
                 amazon_count += 1
+                if not sample_amazon_link:
+                    sample_amazon_link = affiliate_link
             clean_results.append({
                 "title": item.get("title", 'Unknown Dress'),
                 "price": item.get("price", ''),
@@ -702,7 +748,8 @@ def search_ideas():
                 "thumbnail": item.get("thumbnail", ''),
                 "source": item.get("source", '')
             })
-        print("Amazon affiliate applied:", amazon_count)
+        print("Amazon direct links generated:", amazon_count)
+        print("Sample amazon link:", sample_amazon_link)
             
         return jsonify({
             'query_used': query,
