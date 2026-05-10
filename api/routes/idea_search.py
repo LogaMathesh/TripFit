@@ -4,6 +4,7 @@ import re
 from collections import Counter, defaultdict
 from urllib.parse import parse_qsl, quote, urlencode, urlparse, urlunparse
 import google.generativeai as genai
+import requests
 from config import Config
 from database import get_connection
 from prompts.gemini_prompts import SMART_FASHION_SEARCH_PROMPT
@@ -180,6 +181,41 @@ def build_amazon_search_link(title):
         return ""
 
 
+# Amazon Affiliate Product Link Resolver
+def extract_amazon_asin(url):
+    if not url:
+        return None
+
+    match = re.search(r"/(?:dp|gp/product)/([A-Z0-9]{10})(?:[/?#]|$)", url, re.IGNORECASE)
+    if match:
+        return match.group(1).upper()
+
+    return None
+
+
+# Amazon Affiliate Product Link Resolver
+def resolve_final_url(url):
+    try:
+        if not url:
+            return url
+
+        response = requests.get(url, allow_redirects=True, timeout=5)
+        return response.url or url
+    except Exception:
+        return url
+
+
+# Amazon Affiliate Product Link
+def build_amazon_product_link(asin):
+    try:
+        if not asin:
+            return ""
+
+        return f"https://www.amazon.in/dp/{asin}?tag={AMAZON_AFFILIATE_TAG}"
+    except Exception:
+        return ""
+
+
 # Direct Merchant Link Resolver
 def resolve_direct_product_link(item):
     try:
@@ -187,23 +223,47 @@ def resolve_direct_product_link(item):
         source = (item.get("source") or "").lower()
         title = item.get("title") or ""
 
+        candidate_links = [
+            item.get("merchant_link") or item.get("seller_link") or "",
+            item.get("product_link") or item.get("product_page_url") or "",
+            original_link
+        ]
+
+        for candidate_link in candidate_links:
+            if is_amazon_link(candidate_link):
+                asin = extract_amazon_asin(candidate_link)
+                if asin:
+                    final_link = build_amazon_product_link(asin)
+                    print("Resolved Amazon URL:", candidate_link)
+                    print("Extracted ASIN:", asin)
+                    print("Affiliate Product Link:", final_link)
+                    return final_link
+                return add_amazon_affiliate(candidate_link)
+
+        resolved_url = original_link
+        should_resolve = bool(original_link) and ("amazon" in source or "google." in (urlparse(original_link).hostname or "").lower())
+        if should_resolve:
+            resolved_url = resolve_final_url(original_link)
+
+        asin = extract_amazon_asin(resolved_url)
+        if asin:
+            final_link = build_amazon_product_link(asin)
+            print("Resolved Amazon URL:", resolved_url)
+            print("Extracted ASIN:", asin)
+            print("Affiliate Product Link:", final_link)
+            return final_link
+
+        if is_amazon_link(resolved_url):
+            return add_amazon_affiliate(resolved_url)
+
         if "amazon" in source:
             amazon_search_link = build_amazon_search_link(title)
             return amazon_search_link
 
-        merchant_link = item.get("merchant_link") or item.get("seller_link") or ""
-        if is_amazon_link(merchant_link):
-            return add_amazon_affiliate(merchant_link)
-
-        product_link = item.get("product_link") or item.get("product_page_url") or ""
-        if is_amazon_link(product_link):
-            return add_amazon_affiliate(product_link)
-
-        if is_amazon_link(original_link):
-            return add_amazon_affiliate(original_link)
-
         return original_link
     except Exception:
+        if "amazon" in (item.get("source") or "").lower():
+            return build_amazon_search_link(item.get("title") or "")
         return item.get("link") or item.get("product_link") or item.get("product_page_url") or ""
 
 
