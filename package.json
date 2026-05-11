@@ -7,7 +7,7 @@
     "frontend"
   ],
   "scripts": {
-    "build": "npm run build --workspace frontend",
+    "build": "npm run build --workspace frontend -- --outDir ../dist --emptyOutDir",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
