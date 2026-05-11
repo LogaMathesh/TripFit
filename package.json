@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "Comprehensive, end-to-end workflow and system design guide for the FitFinder wardrobe recommendation project.",
   "main": "index.js",
+  "workspaces": [
+    "frontend"
+  ],
   "scripts": {
+    "build": "npm run build --workspace frontend",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
