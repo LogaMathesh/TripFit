@@ -4,7 +4,7 @@ import './Home.css';
 import { Helmet } from 'react-helmet-async';
 import Chatbot from '../components/Chatbot';
 import { Bot, Palette, Search, Shirt, Sparkles, UploadCloud, X } from 'lucide-react';
-import { Helmet } from "react-helmet-async";
+
 
 export default function Home({ setView, user }) {
   const [showChatbot, setShowChatbot] = useState(false);
