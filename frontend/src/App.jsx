@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import './App.css';
+import { Routes, Route, Navigate } from 'react-router-dom';
+
 import Header from './components/Header';
 import Footer from './components/Footer';
+
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import History from './pages/History';
@@ -11,64 +14,124 @@ import About from './pages/About';
 import IdeaSearch from './pages/IdeaSearch';
 import Profile from './pages/Profile';
 import Chatbot from './components/Chatbot';
+
 function App() {
-  const [view, setView] = useState('home');
   const [user, setUser] = useState(null);
 
-  // Load user and last visited page from localStorage on app load
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    const lastView = localStorage.getItem('lastView');
-    
+
     if (storedUser) {
       setUser(storedUser);
-      // Use last visited page or default to 'home' instead of 'dashboard'
-      setView(['favorites', 'suggestions'].includes(lastView) ? 'history' : lastView || 'home');
     }
   }, []);
 
-  // Save user to localStorage on login
   const handleLogin = (username) => {
     setUser(username);
     localStorage.setItem('user', username);
-    setView('home'); // Default to home after login
   };
 
-  // Clear user from localStorage on logout
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('user');
-    localStorage.removeItem('lastView');
-    setView('home');
-  };
-
-  // Custom setView function that also saves to localStorage
-  const handleViewChange = (newView) => {
-    setView(newView);
-    localStorage.setItem('lastView', newView);
   };
 
   return (
     <div className="app">
-      <Header user={user} view={view} setView={handleViewChange} handleLogout={handleLogout} />
-      
+      <Header user={user} handleLogout={handleLogout} />
+
       <main>
-        {/* Unauthenticated routes */}
-        {view === 'home' && <Home setView={handleViewChange} user={user} />}
-        {view === 'login' && !user && <Login onLogin={handleLogin} />}
-        {view === 'signup' && !user && <Signup onSignup={handleLogin} />}
-        {view === 'about' && <About />}
-        
-        {/* Authenticated routes */}
-        {user && (
-          <>
-            {view === 'profile' && <Profile username={user} />}
-            {view === 'dashboard' && <Upload username={user} />}
-            {view === 'history' && <History username={user} />}
-            {view === 'chatbot' && <Chatbot currentUser={{ id: user }} />}
-            {view === 'idea_search' && <IdeaSearch user={user} />}
-          </>
-        )}
+        <Routes>
+          {/* Public Routes */}
+          <Route
+            path="/"
+            element={<Home user={user} />}
+          />
+
+          <Route
+            path="/about"
+            element={<About />}
+          />
+
+          <Route
+            path="/login"
+            element={
+              !user ? (
+                <Login onLogin={handleLogin} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+
+          <Route
+            path="/signup"
+            element={
+              !user ? (
+                <Signup onSignup={handleLogin} />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+
+          {/* Protected Routes */}
+
+          <Route
+            path="/upload"
+            element={
+              user ? (
+                <Upload username={user} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
+          <Route
+            path="/history"
+            element={
+              user ? (
+                <History username={user} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              user ? (
+                <Profile username={user} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
+          <Route
+            path="/chatbot"
+            element={
+              user ? (
+                <Chatbot currentUser={{ id: user }} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
+          <Route
+            path="/idea-search"
+            element={
+              user ? (
+                <IdeaSearch user={user} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+        </Routes>
       </main>
 
       <Footer />

@@ -88,6 +88,17 @@ export default function Upload({ username }) {
 
   return (
     <div className="upload-container">
+      <Helmet>
+  <title>Upload & Classify Dresses with AI | FitFinder</title>
+  <meta
+    name="description"
+    content="Upload dress images and let AI identify clothing styles, colors, and outfit categories automatically."
+  />
+  <meta
+    name="keywords"
+    content="dress classifier, clothing classification, fashion image recognition, AI clothing detector"
+  />
+</Helmet>
       <div className="upload-header">
         <span className="upload-kicker">Wardrobe intake</span>
         <h2>Upload Your Outfits</h2>

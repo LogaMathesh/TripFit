@@ -4,6 +4,7 @@ import './Home.css';
 import { Helmet } from 'react-helmet-async';
 import Chatbot from '../components/Chatbot';
 import { Bot, Palette, Search, Shirt, Sparkles, UploadCloud, X } from 'lucide-react';
+import { Helmet } from "react-helmet-async";
 
 export default function Home({ setView, user }) {
   const [showChatbot, setShowChatbot] = useState(false);
@@ -14,9 +15,34 @@ export default function Home({ setView, user }) {
   return (
     <div className="home-content">
       <Helmet>
-        <title>FitFinder - Your AI Wardrobe Studio</title>
-        <meta name="description" content="Upload your outfit and get smart fashion suggestions based on style, occasion, and color analysis." />
-        <link rel="icon" type="image/jpeg" href="/icon.jpg" />
+        <title>FitFinder - AI Outfit Recommendation Platform</title>
+
+        <meta
+          name="description"
+          content="Upload dresses, classify styles, and get AI-powered outfit recommendations."
+        />
+
+        <meta
+          property="og:title"
+          content="FitFinder - AI Outfit Recommendation Platform"
+        />
+
+        <meta
+          property="og:description"
+          content="Discover outfit ideas, classify clothing, and get AI-powered fashion recommendations."
+        />
+
+        <meta
+          property="og:image"
+          content="https://dresswebapp.vercel.app/fitfinder-logo.png"
+        />
+
+        <meta
+          property="og:url"
+          content="https://dresswebapp.vercel.app"
+        />
+
+        <meta property="og:type" content="website" />
       </Helmet>
       
       <div className="hero-section">

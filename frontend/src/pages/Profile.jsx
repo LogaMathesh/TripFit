@@ -66,6 +66,13 @@ export default function Profile({ username }) {
 
   return (
     <div className="profile-container">
+      <Helmet>
+  <title>User Profile | FitFinder</title>
+  <meta
+    name="description"
+    content="Manage your fashion preferences, sizes, style choices, and personalized outfit recommendations."
+  />
+</Helmet>
       <section className="profile-card">
         <aside className="profile-summary">
           <div className="profile-avatar">

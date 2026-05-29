@@ -8,7 +8,7 @@ import requests
 from config import Config
 from database import get_connection
 from prompts.gemini_prompts import SMART_FASHION_SEARCH_PROMPT
-
+print(Config.SERPAPI_KEY)
 try:
     from serpapi import GoogleSearch
 except ImportError:

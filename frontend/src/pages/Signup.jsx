@@ -35,6 +35,13 @@ export default function Signup({ onSignup }) {
 
   return (
     <form onSubmit={handleSignup}>
+      <Helmet>
+  <title>Create Your FitFinder Account</title>
+  <meta
+    name="description"
+    content="Sign up for FitFinder and start receiving personalized AI outfit recommendations and wardrobe insights."
+  />
+</Helmet>
       <h2>Join FitFinder</h2>
       
       <div className="form-group">

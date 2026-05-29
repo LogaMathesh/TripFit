@@ -58,30 +58,53 @@ def classify():
 
     return jsonify({'position': position, 'style': style, 'color': color, 'image_url': image_url})
 
-
 @uploads_bp.route('/history/<username>', methods=['GET'])
 def get_history(username):
     try:
+        print("USERNAME:", username)
+
         conn = get_connection()
         cur = conn.cursor()
+
         cur.execute(
-            "SELECT id, image_path, position, style, color, uploaded_at, favorite FROM uploads WHERE username = %s ORDER BY uploaded_at DESC",
+            """
+            SELECT id, image_path, position, style, color,
+                   uploaded_at, favorite
+            FROM uploads
+            WHERE username = %s
+            ORDER BY uploaded_at DESC
+            """,
             (username,)
         )
+
         uploads = cur.fetchall()
+
+        print("UPLOADS:", uploads)
+
         cur.close()
         conn.close()
 
         results = [{
-            'id': u[0], 'image_url': u[1],
-            'position': u[2], 'style': u[3], 'color': u[4], 'uploaded_at': u[5].isoformat(),
+            'id': u[0],
+            'image_url': u[1],
+            'position': u[2],
+            'style': u[3],
+            'color': u[4],
+            'uploaded_at': u[5].isoformat(),
             'favorite': u[6] if u[6] is not None else False
         } for u in uploads]
 
         return jsonify(results)
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
 
+    except Exception as e:
+        print("ERROR:", e)
+        import traceback
+        traceback.print_exc()
+
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
 
 @uploads_bp.route('/delete_upload', methods=['POST'])
 def delete_upload():

@@ -10,19 +10,34 @@ export default function History({ username }) {
   const [sortOrder, setSortOrder] = useState('newest');
 
   useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const res = await fetch(apiUrl(`/history/${username}`));
-        const data = await res.json();
+  const fetchHistory = async () => {
+    try {
+      console.log("History username:", username);
+
+      const res = await fetch(apiUrl(`/history/${username}`));
+
+      const data = await res.json();
+
+      console.log("History API response:", data);
+
+      if (Array.isArray(data)) {
         setUploads(data);
-      } catch {
+      } else {
+        console.error("Expected array but got:", data);
         setUploads([]);
       }
-    };
+    } catch (err) {
+      console.error("History fetch error:", err);
+      setUploads([]);
+    }
+  };
 
+  if (username) {
     fetchHistory();
-  }, [username]);
-
+  } else {
+    setUploads([]);
+  }
+}, [username]);
   const normalizeValue = (value) => value || 'Unknown';
 
   const groupByStyle = (uploadList) => {
@@ -37,9 +52,12 @@ export default function History({ username }) {
   };
 
   const getUniqueOptions = (key) => {
-    return [...new Set(uploads.map(upload => normalizeValue(upload[key])))]
-      .sort((a, b) => a.localeCompare(b));
-  };
+  if (!Array.isArray(uploads)) return [];
+
+  return [...new Set(
+    uploads.map(upload => normalizeValue(upload[key]))
+  )].sort((a, b) => a.localeCompare(b));
+};
 
   const formatDate = (dateValue) => {
     return new Date(dateValue).toLocaleDateString(undefined, {
@@ -97,7 +115,7 @@ export default function History({ username }) {
 
   const styleOptions = getUniqueOptions('style');
   const positionOptions = getUniqueOptions('position');
-  const favoriteCount = uploads.filter(upload => upload.favorite).length;
+  const favoriteCount = Array.isArray(uploads)? uploads.filter(upload => upload.favorite).length: 0;
   const hasActiveFilters = favoriteFilter !== 'all' || styleFilter !== 'all' || positionFilter !== 'all' || sortOrder !== 'newest';
 
   const filteredUploads = uploads
@@ -114,6 +132,13 @@ export default function History({ username }) {
 
   return (
     <div className="history-container">
+      <Helmet>
+  <title>Your Outfit History | FitFinder</title>
+  <meta
+    name="description"
+    content="View your previously uploaded outfits, favorite clothing items, and wardrobe history in one place."
+  />
+</Helmet>
       <section className="history-hero">
         <div className="history-heading">
           <span className="history-eyebrow">Wardrobe</span>

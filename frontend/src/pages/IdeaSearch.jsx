@@ -76,6 +76,17 @@ export default function IdeaSearch({ user }) {
 
   return (
     <div className="idea-search-container">
+      <Helmet>
+  <title>AI Outfit Ideas & Fashion Recommendations | FitFinder</title>
+  <meta
+    name="description"
+    content="Get AI-generated outfit ideas for parties, weddings, office wear, travel, beach vacations, casual outings, and special occasions."
+  />
+  <meta
+    name="keywords"
+    content="outfit ideas, fashion recommendations, wedding outfit ideas, party outfits, beach outfits, travel fashion"
+  />
+</Helmet>
       <h2>✨ Magic Dress Idea Search</h2>
       <p className="idea-subtitle">Describe your dream dress in plain text, and our AI will track it down online!</p>
       

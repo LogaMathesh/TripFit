@@ -35,6 +35,13 @@ export default function Login({ onLogin }) {
 
   return (
     <form onSubmit={handleLogin} className="login-container">
+      <Helmet>
+  <title>Login | FitFinder</title>
+  <meta
+    name="description"
+    content="Login to FitFinder to access your AI-powered wardrobe, outfit history, and personalized fashion recommendations."
+  />
+</Helmet>
       <h2>Welcome Back</h2>
       
       <div className="form-group">

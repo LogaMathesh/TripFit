@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
   <url>
     <loc>https://dresswebapp.vercel.app/</loc>
   </url>
+
+  <url>
+    <loc>https://dresswebapp.vercel.app/about</loc>
+  </url>
+
+  <url>
+    <loc>https://dresswebapp.vercel.app/upload</loc>
+  </url>
+
+  <url>
+    <loc>https://dresswebapp.vercel.app/idea-search</loc>
+  </url>
+
 </urlset>

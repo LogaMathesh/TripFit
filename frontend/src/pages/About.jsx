@@ -6,10 +6,16 @@ export default function About() {
   return (
     <div className="home-content">
       <Helmet>
-        <title>About FitFinder</title>
-        <meta name="description" content="Learn more about FitFinder, your AI-powered style and fashion guide." />
-        <link rel="icon" type="image/jpeg" href="/icon.jpg" />
-      </Helmet>
+  <title>About FitFinder | AI Fashion Assistant</title>
+  <meta
+    name="description"
+    content="Learn about FitFinder, an AI-powered fashion platform that helps users classify outfits, organize wardrobes, and discover outfit ideas."
+  />
+  <meta
+    name="keywords"
+    content="AI fashion assistant, fashion technology, wardrobe management, outfit planning"
+  />
+</Helmet>
       <div className="hero-section floating">
         <h2>About FitFinder</h2>
         <p>FitFinder is your trusted companion for smart, AI-powered fashion advice and style recommendations.</p>

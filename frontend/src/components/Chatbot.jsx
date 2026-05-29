@@ -88,6 +88,17 @@ const Chatbot = ({ currentUser }) => {
 
   return (
     <div className="chatbot-container">
+      <Helmet>
+  <title>AI Fashion Chatbot | FitFinder</title>
+  <meta
+    name="description"
+    content="Ask our AI fashion chatbot for outfit suggestions, dress combinations, styling advice, and wardrobe recommendations."
+  />
+  <meta
+    name="keywords"
+    content="fashion chatbot, AI stylist, outfit advisor, wardrobe assistant"
+  />
+</Helmet>
       <div className="chatbot-header">
         <div className="assistant-mark">
           <Bot size={22} />
