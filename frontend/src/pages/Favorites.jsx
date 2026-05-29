@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { apiUrl } from '../lib/api';
 import './History.css'; // Reusing the same CSS for consistency
-
+import { Helmet } from "react-helmet-async";
 export default function Favorites({ username }) {
   const [favoriteUploads, setFavoriteUploads] = useState([]);
 

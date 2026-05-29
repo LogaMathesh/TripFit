@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './Upload.css';
 import { apiUrl } from '../lib/api';
 import { CheckCircle2, ImagePlus, Loader2, UploadCloud, XCircle } from 'lucide-react';
+import { Helmet } from "react-helmet-async";
 
 export default function Upload({ username }) {
   const [uploads, setUploads] = useState([]);

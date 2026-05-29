@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './IdeaSearch.css';
 import { apiUrl } from '../lib/api';
+import { Helmet } from "react-helmet-async";
 
 export default function IdeaSearch({ user }) {
   const [idea, setIdea] = useState('');

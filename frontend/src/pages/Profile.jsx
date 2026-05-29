@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Profile.css';
 import { apiUrl } from '../lib/api';
 import { BadgeIndianRupee, Ruler, Save, Shirt, Sparkles, User } from 'lucide-react';
+import { Helmet } from "react-helmet-async";
 
 export default function Profile({ username }) {
   const [profile, setProfile] = useState({

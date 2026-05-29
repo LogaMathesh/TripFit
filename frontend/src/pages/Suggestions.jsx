@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './Suggestions.css';
 import { apiUrl } from '../lib/api';
+import { Helmet } from "react-helmet-async";
 
 export default function Suggestions({ username }) {
   const [destination, setDestination] = useState('');

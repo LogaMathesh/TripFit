@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './Signup.css';
 import { apiUrl } from '../lib/api';
+import { Helmet } from "react-helmet-async";
 
 export default function Signup({ onSignup }) {
   const [username, setUsername] = useState('');

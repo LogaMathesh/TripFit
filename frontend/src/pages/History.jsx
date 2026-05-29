@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './History.css';
 import { apiUrl } from '../lib/api';
+import { Helmet } from "react-helmet-async";
 
 export default function History({ username }) {
   const [uploads, setUploads] = useState([]);
