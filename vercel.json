@@ -23,9 +23,9 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/((?!sitemap\\.xml$|robots\\.txt$).*)",
-      "destination": "/index.html"
-    }
-  ]
+  {
+    "source": "/((?!.*\\..*).*)",
+    "destination": "/index.html"
+  }
+]
 }
