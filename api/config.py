@@ -21,5 +21,8 @@ class Config:
     CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY")
     CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
     SERPAPI_KEY = os.environ.get("SERPAPI_KEY")
+    SERPAPI_LOCATION = os.environ.get("SERPAPI_LOCATION", "India")
+    SERPAPI_COUNTRY = os.environ.get("SERPAPI_COUNTRY", "in")
+    SERPAPI_GOOGLE_DOMAIN = os.environ.get("SERPAPI_GOOGLE_DOMAIN", "google.co.in")
     GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
     GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")

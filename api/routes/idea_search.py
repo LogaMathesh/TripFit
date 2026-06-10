@@ -638,9 +638,6 @@ def search_ideas():
     if not idea:
         return jsonify({'error': 'No idea provided'}), 400
         
-    if not Config.GEMINI_API_KEY:
-        return jsonify({'error': 'gemini_api_key_missing', 'message': 'Gemini API key is not configured in the backend .env file.'}), 500
-        
     try:
         conn = get_connection()
         cur = conn.cursor()
@@ -684,9 +681,16 @@ def search_ideas():
         print("Normalized preference:", preference_summary)
         print("Occasion priority:", occasion_priority)
 
-        # 2. Prompt Gemini AI to generate a strong shopping query
-        genai.configure(api_key=Config.GEMINI_API_KEY)
-        model = genai.GenerativeModel(Config.GEMINI_MODEL)
+        # 2. Build a usable query first, then optionally improve it with Gemini.
+        # Gemini can reject requests based on the server's deployment region, so
+        # idea search must not depend on it being available.
+        fallback_parts = [idea or "outfit"]
+        profile_keywords = extract_keywords(profile_context)
+        if profile_keywords:
+            fallback_parts.extend(profile_keywords[:3])
+        fallback_parts.append("outfit clothing")
+        query = " ".join(fallback_parts).strip()
+
         occasion_context_for_prompt = dict(occasion_context)
         occasion_context_for_prompt["cluster_priority"] = occasion_priority
         prompt = SMART_FASHION_SEARCH_PROMPT.format(
@@ -704,27 +708,24 @@ def search_ideas():
             occasion_context=json.dumps(occasion_context_for_prompt),
             idea=idea
         )
-        
-        response = model.generate_content(prompt)
-        fallback_parts = [idea or "outfit"]
-        profile_keywords = extract_keywords(profile_context)
-        if profile_keywords:
-            fallback_parts.extend(profile_keywords[:3])
-        fallback_parts.append("outfit clothing")
-        fallback_query = " ".join(fallback_parts).strip()
-        query = fallback_query
 
-        try:
-            cleaned_response = (response.text or "").strip()
-            if cleaned_response.startswith("```"):
-                cleaned_response = cleaned_response.strip("`")
-                cleaned_response = cleaned_response.replace("json", "", 1).strip()
-            parsed_response = json.loads(cleaned_response)
-            parsed_query = (parsed_response.get("query") or "").strip()
-            if parsed_query:
-                query = parsed_query.replace('"', "")
-        except Exception as e:
-            print(f"Failed to parse Gemini search JSON: {e}")
+        if Config.GEMINI_API_KEY:
+            try:
+                genai.configure(api_key=Config.GEMINI_API_KEY)
+                model = genai.GenerativeModel(Config.GEMINI_MODEL)
+                response = model.generate_content(prompt)
+                cleaned_response = (response.text or "").strip()
+                if cleaned_response.startswith("```"):
+                    cleaned_response = cleaned_response.strip("`")
+                    cleaned_response = cleaned_response.replace("json", "", 1).strip()
+                parsed_response = json.loads(cleaned_response)
+                parsed_query = (parsed_response.get("query") or "").strip()
+                if parsed_query:
+                    query = parsed_query.replace('"', "")
+            except Exception as e:
+                print(f"Gemini query enhancement unavailable; using fallback query: {e}")
+        else:
+            print("Gemini API key is not configured; using fallback query.")
         print("Generated query:", query)
         
         # 3. Save to search logs
@@ -777,15 +778,33 @@ def search_ideas():
         params = {
             "engine": "google_shopping",
             "q": query,
-            "gl": "in",
+            "gl": Config.SERPAPI_COUNTRY,
             "hl": "en",
-            "location": "India",
-            "google_domain": "google.co.in",
+            "google_domain": Config.SERPAPI_GOOGLE_DOMAIN,
             "api_key": Config.SERPAPI_KEY
         }
+        if Config.SERPAPI_LOCATION:
+            params["location"] = Config.SERPAPI_LOCATION
         
         search = GoogleSearch(params)
         results_dict = search.get_dict()
+
+        search_error = str(results_dict.get("error", ""))
+        if (
+            "location" in params
+            and "location" in search_error.lower()
+            and ("not supported" in search_error.lower() or "unsupported" in search_error.lower())
+        ):
+            print(f"SerpAPI rejected configured location; retrying without it: {search_error}")
+            params.pop("location")
+            results_dict = GoogleSearch(params).get_dict()
+
+        if results_dict.get("error"):
+            return jsonify({
+                'error': 'shopping_search_failed',
+                'message': 'The shopping search provider could not complete this search.',
+                'details': str(results_dict["error"])
+            }), 502
         
         shopping_results = results_dict.get("shopping_results", [])
         shopping_results = rerank_results(shopping_results, idea, preference_summary, occasion_priority)
